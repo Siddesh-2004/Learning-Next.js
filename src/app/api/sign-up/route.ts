@@ -20,20 +20,25 @@ export async function POST(request: Request) {
     }
     const existingUserVerfiedByEmail = await UserModel.findOne({ email });
     if (existingUserVerfiedByEmail) {
-        if(existingUserVerfiedByEmail.isVerified){
-          return Response.json({
-        success:false,
-        message:"User is already exists with this email"
-      },{
-        status:500
-      })
-        }else{
-          const hasedPassword=await bcrypt.hash(password,10)
-          existingUserVerfiedByEmail.verifyCode=verifyCode;
-          existingUserVerfiedByEmail.password=hasedPassword;
-          existingUserVerfiedByEmail.verifyCodeExpiry=new Date(Date.now()+3600000)
-          await existingUserVerfiedByEmail.save()
-        }
+      if (existingUserVerfiedByEmail.isVerified) {
+        return Response.json(
+          {
+            success: false,
+            message: "User is already exists with this email",
+          },
+          {
+            status: 500,
+          }
+        );
+      } else {
+        const hasedPassword = await bcrypt.hash(password, 10);
+        existingUserVerfiedByEmail.verifyCode = verifyCode;
+        existingUserVerfiedByEmail.password = hasedPassword;
+        existingUserVerfiedByEmail.verifyCodeExpiry = new Date(
+          Date.now() + 3600000
+        );
+        await existingUserVerfiedByEmail.save();
+      }
     } else {
       const hasedPassword = await bcrypt.hash(password, 10);
       const expiryDate = new Date();
@@ -51,26 +56,33 @@ export async function POST(request: Request) {
       await newUser.save();
     }
     //send verification eamil
-   const emailResponse= await sendVerificationEmail({
+    const emailResponse = await sendVerificationEmail(
       email,
       username,
       verifyCode,
-    });
-    if(!emailResponse.success){
-      return Response.json({
-        success:false,
-        message:emailResponse.message
-      },{
-        status:500
-      })
+    );
+    console.log(emailResponse)
+    if (!emailResponse.success) {
+      console.log("this the respone from resend email", emailResponse);
+      return Response.json(
+        {
+          success: false,
+          message: emailResponse.message,
+        },
+        {
+          status: 500,
+        }
+      );
     }
-    return Response.json({
-        success:true,
-        message:"User registered successfully please verify"
-      },{
-        status:500
-      })
-
+    return Response.json(
+      {
+        success: true,
+        message: "User registered successfully please verify",
+      },
+      {
+        status: 200,
+      }
+    );
   } catch (err) {
     console.error("Error during registering user", err);
     return Response.json(
