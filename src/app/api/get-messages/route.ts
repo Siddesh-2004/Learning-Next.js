@@ -1,0 +1,59 @@
+import { getServerSession } from "next-auth";
+import { authOptions } from "../auth/[...nextauth]/option";
+import dbConnect from "@/lib/dbConnection";
+import UserModel from "@/models/user.model";
+import { User } from "next-auth";
+import mongoose from "mongoose";
+
+
+export async function GET(){
+    await dbConnect();
+        const session=await getServerSession(authOptions);
+    const user:User=session?.user as User;
+    if(!session||!session.user){
+        return Response.json({
+            success:false,
+            message:"Not Authenticated"
+        },{
+            status:400
+        })
+    }
+    const userId=new mongoose.Types.ObjectId(user._id);
+    try {
+        const user=await UserModel.aggregate([
+            {
+                $match:userId
+            },{
+                $unwind:"$messages"
+            },{
+                $sort:{'message.createdAt':-1}
+            },
+            {
+                $group:{_id:'$_id',messages:{$push:"$messages"}}
+            }
+        ])
+        if(!user||user.length==0){
+            return Response.json(
+                {
+                    success:false,
+                    message:"User not found"
+                },{
+                    status:404
+                }
+            )
+        }
+        return Response.json({
+            success:true,
+            data:user,
+            message:"Message retrived successfully"
+        })
+    } catch (error) {
+        console.log("Error while retreiving messages",error);
+        return Response.json({
+            success:false,
+            message:"Error while retreiving messages"
+        })
+
+    }
+    
+}
