@@ -1,5 +1,6 @@
-import {z} from "zod"
+import { z } from 'zod';
 
-const verifySchema=z.string().length(6,{message:"Verification code must be 6 charecters long"});
-
-export default verifySchema;
+export  const verifySchema = z.object({
+  username:z.string(),
+  code: z.string().length(6, 'Verification code must be 6 digits'),
+});

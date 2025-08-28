@@ -1,6 +1,6 @@
 import dbConnect from "@/lib/dbConnection";
 import UserModel from "@/models/user.model";
-import verifySchema from "@/schema/verifySchema";
+import {verifySchema} from "@/schema/verifySchema";
 import {  z } from "zod";
 
 const VerifyCodeVerificationSchema = z.object({
@@ -10,10 +10,10 @@ const VerifyCodeVerificationSchema = z.object({
 export async function POST(request: Request) {
   await dbConnect();
   try {
-    const { verifyCode, email } = await request.json();
-    console.log(typeof(verifyCode))
+    const { verifyCode, username } = await request.json();
+    console.log(verifyCode,username)
     const result = VerifyCodeVerificationSchema.safeParse({
-      verifyCode
+      verifyCode,username
     });
     if (!result.success) {
         console.log(result)
@@ -22,13 +22,13 @@ export async function POST(request: Request) {
         message: "Invaild verification code",
       });
     }
-    const verifiedVerifyCode = result.data.verifyCode;
-    const userDetails = await UserModel.findOne({ email });
+    const verifiedVerifyCode = result.data.verifyCode.code;
+    const userDetails = await UserModel.findOne({ username });
     if (!userDetails) {
       return Response.json(
         {
           success: false,
-          message: "User doesnt exists with this email",
+          message: "User doesnt exists with this username",
         },
         {
           status: 500,
