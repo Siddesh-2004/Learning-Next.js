@@ -1,5 +1,7 @@
 import {z} from "zod"
 
-const acceptMessage=z.boolean()
+const acceptMessage=z.object({
+    acceptMessages:z.boolean()
+})
 
 export default acceptMessage

@@ -25,7 +25,7 @@ import { toast } from "sonner";
 import axios from "axios";
 type MessageCardProps = {
   message: Message;
-  onMessageDelete: (messageId:unknown) => void;
+  onMessageDelete: (messageId:string) => void;
 };
 
 function MessageCard({ message, onMessageDelete }: MessageCardProps) {
@@ -38,7 +38,7 @@ function MessageCard({ message, onMessageDelete }: MessageCardProps) {
       toast("Error while deleting the message");
     }
   };
-  onMessageDelete(message._id);
+  onMessageDelete(message._id as string );
   return (
     <Card>
       <CardHeader>
